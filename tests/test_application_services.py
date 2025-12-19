@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import bs4
 import pytest
 import sulguk
@@ -49,14 +51,12 @@ def test_format_body_joins_input_lists(monkeypatch):
     assert any("item 2" in d.text for d in divs)
 
 
-def test_format_body_invalid_html_falls_back(monkeypatch):
+@patch("notifier.application.services.sulguk.transform_html")
+def test_format_body_invalid_html_falls_back(mock_transform_html):
     service = RenderService(custom_labels=[], join_input_with_list=False)
 
     # Force sulguk.transform_html to raise and verify fallback
-    def _raise(*args, **kwargs):
-        raise RuntimeError("boom")
-
-    monkeypatch.setattr(sulguk, "transform_html", _raise)
+    mock_transform_html.side_effect = RuntimeError("boom")
 
     assert service.format_body("<p>broken</p>") == "<p></p>"
 

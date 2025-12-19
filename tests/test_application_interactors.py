@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import sulguk
 
 from notifier.application.interactors import (
@@ -71,19 +73,13 @@ def _make_render_result(text: str) -> sulguk.RenderResult:
     )
 
 
-def test_send_issue_uses_default_template(monkeypatch):
+@patch("notifier.application.interactors.sulguk.transform_html")
+def test_send_issue_uses_default_template(mock_transform_html):
     github = _GithubStub()
     telegram = _TelegramStub()
     render_service = _RenderServiceStub()
 
-    # capture input HTML passed to sulguk.transform_html
-    captured = {}
-
-    def _fake_transform_html(message: str, base_url: str):
-        captured["message"] = message
-        return _make_render_result("rendered")
-
-    monkeypatch.setattr("notifier.application.interactors.sulguk.transform_html", _fake_transform_html)
+    mock_transform_html.return_value = _make_render_result("rendered")
 
     interactor = SendIssue(
         template="",
@@ -94,6 +90,11 @@ def test_send_issue_uses_default_template(monkeypatch):
 
     interactor.handler()
 
+    # Verify transform_html was called with correct message
+    mock_transform_html.assert_called_once()
+    call_args = mock_transform_html.call_args
+    captured_message = call_args[0][0]
+
     assert ISSUE_TEMPLATE.format(
         id=github.get_issue().id,
         user=github.get_issue().user,
@@ -103,28 +104,25 @@ def test_send_issue_uses_default_template(monkeypatch):
         body=render_service._body,
         repository=github.get_issue().repository,
         promo="<a href='/reagento/relator'>sent via relator</a>",
-    ) == captured["message"]
+    ) == captured_message
     # ensure telegram was called with rendered result
     assert len(telegram.sent) == 1
     assert telegram.sent[0].text == "rendered"
 
 
-def test_send_issue_truncates_long_messages(monkeypatch):
+@patch("notifier.application.interactors.sulguk.transform_html")
+def test_send_issue_truncates_long_messages(mock_transform_html):
     github = _GithubStub()
     telegram = _TelegramStub()
     # create very long body
     long_body = "x" * (TG_MESSAGE_LIMIT + 10)
     render_service = _RenderServiceStub(body=long_body)
 
-    # first call returns too-long message, second call shorter text
-    calls: list[str] = []
-
-    def _fake_transform_html(message: str, base_url: str):
-        calls.append(message)
-        # render_result.text should reflect the original message length
+    # render_result.text should reflect the original message length
+    def _side_effect(message: str, base_url: str):
         return _make_render_result(text=message)
 
-    monkeypatch.setattr("notifier.application.interactors.sulguk.transform_html", _fake_transform_html)
+    mock_transform_html.side_effect = _side_effect
 
     interactor = SendIssue(
         template=ISSUE_TEMPLATE,
@@ -138,22 +136,18 @@ def test_send_issue_truncates_long_messages(monkeypatch):
     # when message length exceeds limit, we do not send via telegram
     assert telegram.sent == []
     # second transform_html call should be without description
-    assert len(calls) == 2
+    assert mock_transform_html.call_count == 2
+    calls = [call[0][0] for call in mock_transform_html.call_args_list]
     assert "<p></p>" in calls[1]
 
 
-def test_send_pr_uses_default_template(monkeypatch):
+@patch("notifier.application.interactors.sulguk.transform_html")
+def test_send_pr_uses_default_template(mock_transform_html):
     github = _GithubStub()
     telegram = _TelegramStub()
     render_service = _RenderServiceStub()
 
-    captured = {}
-
-    def _fake_transform_html(message: str, base_url: str):
-        captured["message"] = message
-        return _make_render_result("rendered")
-
-    monkeypatch.setattr("notifier.application.interactors.sulguk.transform_html", _fake_transform_html)
+    mock_transform_html.return_value = _make_render_result("rendered")
 
     interactor = SendPR(
         template="",
@@ -179,24 +173,24 @@ def test_send_pr_uses_default_template(monkeypatch):
         base_ref=pr.base_ref,
         promo="<a href='/reagento/relator'>sent via relator</a>",
     )
-    assert captured["message"] == expected_message
+    call_args = mock_transform_html.call_args
+    captured_message = call_args[0][0]
+    assert captured_message == expected_message
     assert len(telegram.sent) == 1
     assert telegram.sent[0].text == "rendered"
 
 
-def test_send_pr_truncates_long_messages(monkeypatch):
+@patch("notifier.application.interactors.sulguk.transform_html")
+def test_send_pr_truncates_long_messages(mock_transform_html):
     github = _GithubStub()
     telegram = _TelegramStub()
     long_body = "x" * (TG_MESSAGE_LIMIT + 10)
     render_service = _RenderServiceStub(body=long_body)
 
-    calls: list[str] = []
-
-    def _fake_transform_html(message: str, base_url: str):
-        calls.append(message)
+    def _side_effect(message: str, base_url: str):
         return _make_render_result(text=message)
 
-    monkeypatch.setattr("notifier.application.interactors.sulguk.transform_html", _fake_transform_html)
+    mock_transform_html.side_effect = _side_effect
 
     interactor = SendPR(
         template=PR_TEMPLATE,
@@ -208,7 +202,8 @@ def test_send_pr_truncates_long_messages(monkeypatch):
     interactor.handler()
 
     assert telegram.sent == []
-    assert len(calls) == 2
+    assert mock_transform_html.call_count == 2
+    calls = [call[0][0] for call in mock_transform_html.call_args_list]
     assert "<p></p>" in calls[1]
 
 

@@ -1,4 +1,4 @@
-from unittest import mock
+from unittest.mock import Mock, patch
 
 import requests
 import sulguk
@@ -7,8 +7,9 @@ from notifier.infrastructure.github_gateway import GithubGateway
 from notifier.infrastructure.telegram_gateway import TelegramGateway
 
 
-def test_github_gateway_get_issue_uses_expected_headers(monkeypatch):
-    response = mock.Mock()
+@patch("notifier.infrastructure.github_gateway.requests.get")
+def test_github_gateway_get_issue_uses_expected_headers(mock_get):
+    response = Mock()
     response.json.return_value = {
         "number": 1,
         "title": "Issue",
@@ -18,23 +19,20 @@ def test_github_gateway_get_issue_uses_expected_headers(monkeypatch):
         "body_html": "<p>body</p>",
     }
     response.raise_for_status.return_value = None
-
-    called_kwargs = {}
-
-    def _fake_get(url, headers, timeout):
-        called_kwargs["url"] = url
-        called_kwargs["headers"] = headers
-        called_kwargs["timeout"] = timeout
-        return response
-
-    monkeypatch.setattr(requests, "get", _fake_get)
+    mock_get.return_value = response
 
     gw = GithubGateway(token="TOKEN", event_url="https://api.github.com/issue")
     issue = gw.get_issue()
 
-    assert called_kwargs["url"] == "https://api.github.com/issue"
-    assert called_kwargs["headers"]["Authorization"] == "Bearer TOKEN"
-    assert called_kwargs["timeout"] == 30
+    mock_get.assert_called_once_with(
+        "https://api.github.com/issue",
+        headers={
+            "Accept": "application/vnd.github.v3.html+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+            "Authorization": "Bearer TOKEN",
+        },
+        timeout=30,
+    )
     assert issue.title == "Issue"
     assert issue.labels == ["bug"]
     assert issue.user == "user"
@@ -42,8 +40,9 @@ def test_github_gateway_get_issue_uses_expected_headers(monkeypatch):
     assert issue.body == "<p>body</p>"
 
 
-def test_github_gateway_get_pull_request_builds_entity(monkeypatch):
-    response = mock.Mock()
+@patch("notifier.infrastructure.github_gateway.requests.get")
+def test_github_gateway_get_pull_request_builds_entity(mock_get):
+    response = Mock()
     response.json.return_value = {
         "number": 2,
         "title": "PR",
@@ -57,11 +56,7 @@ def test_github_gateway_get_pull_request_builds_entity(monkeypatch):
         "base": {"ref": "main", "repo": {"full_name": "owner/repo"}},
     }
     response.raise_for_status.return_value = None
-
-    def _fake_get(url, headers, timeout):
-        return response
-
-    monkeypatch.setattr(requests, "get", _fake_get)
+    mock_get.return_value = response
 
     gw = GithubGateway(token="TOKEN", event_url="https://api.github.com/pr")
     pr = gw.get_pull_request()
@@ -72,22 +67,14 @@ def test_github_gateway_get_pull_request_builds_entity(monkeypatch):
     assert pr.repository == "owner/repo"
 
 
-def test_telegram_gateway_send_message_success(monkeypatch, capsys):
+@patch("notifier.infrastructure.telegram_gateway.requests.post")
+def test_telegram_gateway_send_message_success(mock_post, capsys):
     result = sulguk.RenderResult(text="hi", entities=[{"offset": 0, "length": 2, "type": "bold"}])
 
-    response = mock.Mock()
+    response = Mock()
     response.raise_for_status.return_value = None
     response.json.return_value = {"ok": True}
-
-    def _fake_post(url, json, timeout):
-        assert "sendMessage" in url
-        assert json["text"] == "hi"
-        # language field should be removed if exists
-        for e in json["entities"]:
-            assert "language" not in e
-        return response
-
-    monkeypatch.setattr(requests, "post", _fake_post)
+    mock_post.return_value = response
 
     gw = TelegramGateway(
         chat_id="123",
@@ -97,28 +84,29 @@ def test_telegram_gateway_send_message_success(monkeypatch, capsys):
     )
 
     gw.send_message(result)
+
+    mock_post.assert_called_once()
+    call_args, call_kwargs = mock_post.call_args
+    assert "sendMessage" in call_args[0]
+    assert call_kwargs["json"]["text"] == "hi"
+    # language field should be removed if exists
+    for e in call_kwargs["json"]["entities"]:
+        assert "language" not in e
+
     captured = capsys.readouterr()
     # Should print response json on success
     assert "ok" in captured.out
 
 
-def test_telegram_gateway_send_message_retries_on_error(monkeypatch, capsys):
+@patch("notifier.infrastructure.telegram_gateway.time.sleep")
+@patch("notifier.infrastructure.telegram_gateway.requests.post")
+def test_telegram_gateway_send_message_retries_on_error(mock_post, mock_sleep, capsys):
     result = sulguk.RenderResult(text="hi", entities=[])
 
-    response = mock.Mock()
+    response = Mock()
     response.raise_for_status.side_effect = requests.exceptions.HTTPError("fail")
     response.content = b"error"
-
-    calls = {"count": 0}
-
-    def _fake_post(url, json, timeout):
-        calls["count"] += 1
-        return response
-
-    monkeypatch.setattr(requests, "post", _fake_post)
-
-    # avoid real sleeping in tests
-    monkeypatch.setattr("notifier.infrastructure.telegram_gateway.time.sleep", lambda *_: None)
+    mock_post.return_value = response
 
     gw = TelegramGateway(
         chat_id="123",
@@ -130,7 +118,7 @@ def test_telegram_gateway_send_message_retries_on_error(monkeypatch, capsys):
     gw.send_message(result)
 
     # ensure we retried attempt_count times
-    assert calls["count"] == 3
+    assert mock_post.call_count == 3
     captured = capsys.readouterr()
     assert "error" in captured.err
 

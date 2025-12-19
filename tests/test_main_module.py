@@ -1,4 +1,5 @@
 import os
+from unittest.mock import patch
 
 import pytest
 
@@ -23,7 +24,26 @@ def test_get_interactor_raises_on_unknown():
         get_interactor("https://github.com/owner/repo/unknown/1")
 
 
-def test_main_module_env_parsing(monkeypatch):
+@patch.dict(
+    os.environ,
+    {
+        "TELEGRAM_CHAT_ID": "123",
+        "TELEGRAM_BOT_TOKEN": "token",
+        "ATTEMPT_COUNT": "3",
+        "EVENT_URL": "https://api.github.com/repos/o/r/issues/1",
+        "GITHUB_TOKEN": "gtoken",
+        "CUSTOM_LABELS": "custom1,custom2",
+        "JOIN_INPUT_WITH_LIST": "1",
+        "HTML_TEMPLATE": "",
+    },
+)
+@patch("notifier.__main__.GithubGateway")
+@patch("notifier.__main__.TelegramGateway")
+@patch("notifier.__main__.RenderService")
+@patch("notifier.__main__.get_interactor")
+def test_main_module_env_parsing(
+    mock_get_interactor, mock_render_service, mock_telegram, mock_github
+):
     """
     Smoke-test the main module wiring by simulating environment and
     checking that the selected interactor's handler is invoked.
@@ -49,38 +69,21 @@ def test_main_module_env_parsing(monkeypatch):
         def handler(self):
             self.called = True
 
-    # patch environment
-    monkeypatch.setenv("TELEGRAM_CHAT_ID", "123")
-    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "token")
-    monkeypatch.setenv("ATTEMPT_COUNT", "3")
-    monkeypatch.setenv("EVENT_URL", "https://api.github.com/repos/o/r/issues/1")
-    monkeypatch.setenv("GITHUB_TOKEN", "gtoken")
-    monkeypatch.setenv("CUSTOM_LABELS", "custom1,custom2")
-    monkeypatch.setenv("JOIN_INPUT_WITH_LIST", "1")
-    monkeypatch.setenv("HTML_TEMPLATE", "")
+    mock_github.return_value = _FakeGithub()
+    mock_telegram.return_value = _FakeTelegram()
+    mock_render_service.return_value = _FakeRenderService()
+    mock_get_interactor.return_value = _FakeInteractor
 
-    # re-import main to execute the __main__ guard logic in a controlled way:
-    # we simulate being run as script by setting __name__ before executing.
+    # Import and execute main logic
     import importlib
 
-    # Create a new module object from the source, but do not run its main block.
-    # Instead, we patch its dependencies first and then execute the guarded code
-    # by calling its main interactor manually.
     main_mod = importlib.import_module("notifier.__main__")
-
-    # patch gateways and render service used inside __main__
-    monkeypatch.setattr(main_mod, "GithubGateway", _FakeGithub)
-    monkeypatch.setattr(main_mod, "TelegramGateway", _FakeTelegram)
-    monkeypatch.setattr(main_mod, "RenderService", _FakeRenderService)
-
-    # patch get_interactor to return our fake interactor class
-    monkeypatch.setattr(main_mod, "get_interactor", lambda _url: _FakeInteractor)
 
     fake_interactor = main_mod.get_interactor(os.environ["EVENT_URL"])(
         template="",
-        github=_FakeGithub,
-        telegram=_FakeTelegram,
-        render_service=_FakeRenderService,
+        github=_FakeGithub(),
+        telegram=_FakeTelegram(),
+        render_service=_FakeRenderService(),
     )
     # Ensure handler exists and can be called without errors
     fake_interactor.handler()
