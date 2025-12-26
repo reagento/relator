@@ -24,21 +24,15 @@ def get_interactor(url: str) -> type[SendIssue] | type[SendPR]:
 
 
 if __name__ == "__main__":
-    html_template = os.environ.get("HTML_TEMPLATE", "").strip()
+    bot_token = os.environ["TELEGRAM_BOT_TOKEN"]
 
-    telegram_gateway = TelegramGateway(
-        chat_id=os.environ["TELEGRAM_CHAT_ID"],
-        bot_token=os.environ["TELEGRAM_BOT_TOKEN"],
-        attempt_count=int(os.environ["ATTEMPT_COUNT"]),
-        message_thread_id=os.environ.get("TELEGRAM_MESSAGE_THREAD_ID"),
-    )
+    attempt_count = os.environ["ATTEMPT_COUNT"]
 
-    event_url = os.environ["EVENT_URL"]
+    telegram_gateway = TelegramGateway(bot_token, int(attempt_count))
 
-    github_gateway = GithubGateway(
-        token=(os.environ.get("GITHUB_TOKEN") or "").strip(),
-        event_url=event_url,
-    )
+    gh_token = os.environ["GITHUB_TOKEN"]
+
+    github_gateway = GithubGateway(gh_token)
 
     custom_labels = os.environ.get("CUSTOM_LABELS", "").split(",")
     if custom_labels == [""]:
@@ -49,7 +43,14 @@ if __name__ == "__main__":
         join_input_with_list=os.environ.get("JOIN_INPUT_WITH_LIST") == "1",
     )
 
+    event_url = os.environ["EVENT_URL"]
+
+    html_template = os.environ.get("HTML_TEMPLATE", "").strip()
+
     interactor = get_interactor(event_url)(
+        bot_token=os.environ["TELEGRAM_BOT_TOKEN"],
+        chat_id=os.environ["TELEGRAM_CHAT_ID"],
+        thread_id=os.environ.get("TELEGRAM_MESSAGE_THREAD_ID"),
         template=html_template,
         github=github_gateway,
         telegram=telegram_gateway,

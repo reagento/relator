@@ -30,7 +30,7 @@ on:
 
 permissions:
   issues: read
-  pull_request: read
+  pull_requests: read
 
 jobs:
   notify:

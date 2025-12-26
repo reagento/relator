@@ -8,7 +8,6 @@ from notifier.domain.entities import Issue, PullRequest
 
 TG_MESSAGE_LIMIT: typing.Final = 4096
 
-
 ISSUE_TEMPLATE: typing.Final = (
     "🚀 <b>New issue to <a href=/{repository}>{repository}</a> by <a href=/{user}>@{user}</a> </b><br/>"
     "📝 <b>{title}</b> (<a href='{url}'>#{id}</a>)<br/><br/>"
@@ -32,11 +31,17 @@ class SendIssue:
     def __init__(
         self,
         template: str,
+        bot_token: str,
+        chat_id: str,
+        thread_id: str | None,
         github: interfaces.Github,
         telegram: interfaces.Telegram,
         render_service: RenderService,
     ) -> None:
         self._template = template or ISSUE_TEMPLATE
+        self._bot_token = bot_token
+        self._chat_id = chat_id
+        self._thread_id = thread_id
         self._github = github
         self._telegram = telegram
         self._render_service = render_service
@@ -54,8 +59,19 @@ class SendIssue:
             base_url="https://github.com",
         )
 
+        for e in render_result.entities:
+            e.pop("language", None)
+
+        tg_body=interfaces.TgPayload(
+            text=render_result.text,
+            entities=render_result.entities,
+            disable_web_page_preview=True,
+            chat_id=self._chat_id,
+            message_thread_id = self._thread_id
+        )
+
         if len(render_result.text) <= TG_MESSAGE_LIMIT:
-            return self._telegram.send_message(render_result)
+            return self._telegram.send_message(tg_body)
 
         message_without_description = self._create_message(issue, "<p></p>", labels)
 
@@ -81,11 +97,17 @@ class SendPR:
     def __init__(
         self,
         template: str,
+        bot_token: str,
+        chat_id: str,
+        thread_id: str | None,
         github: interfaces.Github,
         telegram: interfaces.Telegram,
         render_service: RenderService,
     ) -> None:
         self._template = template or PR_TEMPLATE
+        self._bot_token = bot_token
+        self._chat_id = chat_id
+        self._thread_id = thread_id
         self._github = github
         self._telegram = telegram
         self._render_service = render_service
@@ -103,8 +125,19 @@ class SendPR:
             base_url="https://github.com",
         )
 
+        for e in render_result.entities:
+            e.pop("language", None)
+
+        tg_body = interfaces.TgPayload(
+            text=render_result.text,
+            entities=render_result.entities,
+            disable_web_page_preview=True,
+            chat_id=self._chat_id,
+            message_thread_id = self._thread_id
+        )
+
         if len(render_result.text) <= TG_MESSAGE_LIMIT:
-            return self._telegram.send_message(render_result)
+            return self._telegram.send_message(tg_body)
 
         message_without_description = self._create_message(pr, "<p></p>", labels)
 
