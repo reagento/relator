@@ -31,22 +31,16 @@ class SendIssue:
     def __init__(
         self,
         template: str,
-        bot_token: str,
-        chat_id: str,
-        thread_id: str | None,
         github: interfaces.Github,
         telegram: interfaces.Telegram,
         render_service: RenderService,
     ) -> None:
         self._template = template or ISSUE_TEMPLATE
-        self._bot_token = bot_token
-        self._chat_id = chat_id
-        self._thread_id = thread_id
         self._github = github
         self._telegram = telegram
         self._render_service = render_service
 
-    def handler(self) -> None:
+    def handler(self, chat_id: str, thread_id: str | None) -> None:
         issue = self._github.get_issue()
 
         labels = self._render_service.format_labels(issue.labels)
@@ -66,8 +60,8 @@ class SendIssue:
             text=render_result.text,
             entities=render_result.entities,
             disable_web_page_preview=True,
-            chat_id=self._chat_id,
-            message_thread_id = self._thread_id
+            chat_id=chat_id,
+            message_thread_id=thread_id,
         )
 
         if len(render_result.text) <= TG_MESSAGE_LIMIT:
@@ -97,22 +91,16 @@ class SendPR:
     def __init__(
         self,
         template: str,
-        bot_token: str,
-        chat_id: str,
-        thread_id: str | None,
         github: interfaces.Github,
         telegram: interfaces.Telegram,
         render_service: RenderService,
     ) -> None:
         self._template = template or PR_TEMPLATE
-        self._bot_token = bot_token
-        self._chat_id = chat_id
-        self._thread_id = thread_id
         self._github = github
         self._telegram = telegram
         self._render_service = render_service
 
-    def handler(self) -> None:
+    def handler(self, chat_id: str, thread_id: str | None) -> None:
         pr = self._github.get_pull_request()
 
         labels = self._render_service.format_labels(pr.labels)
@@ -132,8 +120,8 @@ class SendPR:
             text=render_result.text,
             entities=render_result.entities,
             disable_web_page_preview=True,
-            chat_id=self._chat_id,
-            message_thread_id = self._thread_id
+            chat_id=chat_id,
+            message_thread_id=thread_id,
         )
 
         if len(render_result.text) <= TG_MESSAGE_LIMIT:

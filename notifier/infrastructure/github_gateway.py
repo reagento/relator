@@ -10,6 +10,13 @@ from requests import Session
 from notifier.application import interfaces
 from notifier.domain.entities import Issue, PullRequest
 
+
+def body_pre_loader(data: dict[str, Any]) -> dict[str, Any]:
+    if "body_html" not in data:
+        data["body_html"] = ""
+    return data
+
+
 issue_recipe = [
     name_mapping(
         Issue,
@@ -20,6 +27,8 @@ issue_recipe = [
             "body": "body_html",
         },
     ),
+    loader(P[Issue], body_pre_loader, Chain.FIRST),
+    loader(P[Issue].labels, lambda labels: [label["name"] for label in labels]),
 ]
 
 pr_recipe = [
@@ -35,20 +44,14 @@ pr_recipe = [
             "body": "body_html",
         },
     ),
+    loader(P[PullRequest], body_pre_loader, Chain.FIRST),
+    loader(P[PullRequest].labels, lambda labels: [label["name"] for label in labels]),
 ]
-
-
-def body_pre_loader(data: dict[str, Any]) -> dict[str, Any]:
-    if "body_html" not in data:
-        data["body_html"] = ""
-    return data
-
 
 gh_recipe = [
     *issue_recipe,
     *pr_recipe,
-    loader(P[Issue, PullRequest], body_pre_loader, Chain.FIRST),
-    loader(P[Issue, PullRequest].labels, lambda labels: [label["name"] for label in labels])
+
 ]
 
 rest = RestBuilder(
@@ -57,32 +60,30 @@ rest = RestBuilder(
     query_param_dumper=Retort(),
 )
 
-headers = (
-    rt.Header("Accept", "application/vnd.github.v3.html+json"),
-    rt.Header("X-GitHub-Api-Version", "2022-11-28"),
-    rt.Header("Authorization", "Bearer {self._token}"),
-)
-
-
-def get_event_url() -> str:
-    event_url = os.environ["EVENT_URL"]
-    return event_url
-
 
 class GithubGateway(RequestsClient, interfaces.Github):
     def __init__(
         self,
         token: str,
-        base_url: str = "",
+        event_url: str,
         session: Session | None = None
     ) -> None:
         self._token = token
-        super().__init__(base_url, session or Session(), headers)
+        self._event_url = event_url
+        super().__init__(
+            "",
+            session or Session(),
+            (
+                rt.Header("Accept", "application/vnd.github.v3.html+json"),
+                rt.Header("X-GitHub-Api-Version", "2022-11-28"),
+                rt.Header("Authorization", f"Bearer {self._token}"),
+            ),
+        )
 
-    @rest.get(get_event_url)
+    @rest.get("{self._event_url}")
     def get_issue(self) -> Issue:  # type: ignore[empty-body]
         pass
 
-    @rest.get(get_event_url)
+    @rest.get("{self._event_url}")
     def get_pull_request(self) -> PullRequest:  # type: ignore[empty-body]
         pass

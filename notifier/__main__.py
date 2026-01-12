@@ -25,40 +25,36 @@ def get_interactor(url: str) -> type[SendIssue] | type[SendPR]:
 
 if __name__ == "__main__":
     bot_token = os.environ["TELEGRAM_BOT_TOKEN"]
-
     attempt_count = os.environ["ATTEMPT_COUNT"]
 
     telegram_gateway = TelegramGateway(bot_token, int(attempt_count))
 
     gh_token = os.environ["GITHUB_TOKEN"]
+    event_url = os.environ["EVENT_URL"]
 
-    github_gateway = GithubGateway(gh_token)
+    github_gateway = GithubGateway(gh_token, event_url)
 
+    html_template = os.environ.get("HTML_TEMPLATE", "").strip()
     custom_labels = os.environ.get("CUSTOM_LABELS", "").split(",")
     if custom_labels == [""]:
         custom_labels = []
-
     render_service = RenderService(
         custom_labels=custom_labels,
         join_input_with_list=os.environ.get("JOIN_INPUT_WITH_LIST") == "1",
     )
 
-    event_url = os.environ["EVENT_URL"]
-
-    html_template = os.environ.get("HTML_TEMPLATE", "").strip()
-
     interactor = get_interactor(event_url)(
-        bot_token=os.environ["TELEGRAM_BOT_TOKEN"],
-        chat_id=os.environ["TELEGRAM_CHAT_ID"],
-        thread_id=os.environ.get("TELEGRAM_MESSAGE_THREAD_ID"),
         template=html_template,
         github=github_gateway,
         telegram=telegram_gateway,
         render_service=render_service,
     )
 
+    chat_id = os.environ["TELEGRAM_CHAT_ID"]
+    message_thread_id=os.environ.get("TELEGRAM_MESSAGE_THREAD_ID")
+
     try:
-        interactor.handler()
+        interactor.handler(chat_id, message_thread_id)
     except Exception as e:
         print(f"Error processing event: {e}", file=sys.stderr)
         sys.exit(1)

@@ -6,6 +6,7 @@ import sulguk
 
 from notifier.domain.entities import PullRequest, Issue
 
+
 @dataclass
 class TgPayload:
     text: str
@@ -25,4 +26,4 @@ class Github(typing.Protocol):
 
 class Telegram(typing.Protocol):
     @abc.abstractmethod
-    def send_message(self, body: TgPayload) -> None: ...
+    def send_message(self, body: TgPayload) -> typing.Any: ...

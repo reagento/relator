@@ -30,5 +30,5 @@ class TelegramGateway(RequestsClient, interfaces.Telegram):
         super().__init__(base_url, tg_session)
 
     @rest.post("/bot{self._token}/sendMessage")
-    def send_message(self, body: interfaces.TgPayload) -> Any:
+    def send_message(self, body: interfaces.TgPayload) -> Any:  # type: ignore[empty-body]
         pass
