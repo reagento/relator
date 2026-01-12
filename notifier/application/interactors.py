@@ -5,6 +5,7 @@ import sulguk
 from notifier.application import interfaces
 from notifier.application.services import RenderService
 from notifier.domain.entities import Issue, PullRequest
+from notifier.infrastructure.telegram_gateway import TgPayload
 
 TG_MESSAGE_LIMIT: typing.Final = 4096
 
@@ -56,7 +57,7 @@ class SendIssue:
         for e in render_result.entities:
             e.pop("language", None)
 
-        tg_body=interfaces.TgPayload(
+        tg_body=TgPayload(
             text=render_result.text,
             entities=render_result.entities,
             disable_web_page_preview=True,
@@ -116,7 +117,7 @@ class SendPR:
         for e in render_result.entities:
             e.pop("language", None)
 
-        tg_body = interfaces.TgPayload(
+        tg_body = TgPayload(
             text=render_result.text,
             entities=render_result.entities,
             disable_web_page_preview=True,

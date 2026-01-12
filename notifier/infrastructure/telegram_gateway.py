@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Any
 
 from adaptix import Retort
@@ -5,6 +6,7 @@ from requests import Session
 from requests.adapters import HTTPAdapter
 from descanso import RestBuilder
 from descanso.http.requests import RequestsClient
+import sulguk
 
 from notifier.application import interfaces
 
@@ -13,6 +15,15 @@ rest = RestBuilder(
     response_body_loader=Retort(),
     query_param_dumper=Retort(),
 )
+
+
+@dataclass
+class TgPayload:
+    text: str
+    entities: list[sulguk.data.MessageEntity]
+    disable_web_page_preview: bool
+    chat_id: str
+    message_thread_id: str | None
 
 
 class TelegramGateway(RequestsClient, interfaces.Telegram):
