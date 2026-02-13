@@ -54,15 +54,14 @@ class SendIssue:
             base_url="https://github.com",
         )
 
-        if len(render_result.text) <= TG_MESSAGE_LIMIT:
-            return self._telegram.send_message(render_result)
+        if len(render_result.text) > TG_MESSAGE_LIMIT:
+            message_without_description = self._create_message(issue, "<p></p>", labels)
+            sulguk.transform_html(
+                message_without_description,
+                base_url="https://github.com",
+            )
 
-        message_without_description = self._create_message(issue, "<p></p>", labels)
-
-        sulguk.transform_html(
-            message_without_description,
-            base_url="https://github.com",
-        )
+        return self._telegram.send_message(render_result)
 
     def _create_message(self, issue: Issue, body: str, labels: str) -> str:
         return self._template.format(
@@ -103,15 +102,14 @@ class SendPR:
             base_url="https://github.com",
         )
 
-        if len(render_result.text) <= TG_MESSAGE_LIMIT:
-            return self._telegram.send_message(render_result)
+        if len(render_result.text) > TG_MESSAGE_LIMIT:
+            message_without_description = self._create_message(pr, "<p></p>", labels)
+            render_result = sulguk.transform_html(
+                message_without_description,
+                base_url="https://github.com",
+            )
 
-        message_without_description = self._create_message(pr, "<p></p>", labels)
-
-        sulguk.transform_html(
-            message_without_description,
-            base_url="https://github.com",
-        )
+        return self._telegram.send_message(render_result)
 
     def _create_message(self, pr: PullRequest, body: str, labels: str) -> str:
         return self._template.format(
