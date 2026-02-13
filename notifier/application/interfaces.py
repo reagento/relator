@@ -1,9 +1,7 @@
 import abc
 import typing
 
-import sulguk
-
-from notifier.domain.entities import PullRequest, Issue
+from notifier.domain.entities import Issue, PullRequest
 
 
 class Github(typing.Protocol):
@@ -14,6 +12,19 @@ class Github(typing.Protocol):
     def get_pull_request(self) -> PullRequest: ...
 
 
-class Telegram(typing.Protocol):
+class Notifier(typing.Protocol):
     @abc.abstractmethod
-    def send_message(self, render_result: sulguk.RenderResult) -> None: ...
+    def send_issue(
+        self,
+        issue: Issue,
+        formatted_body: str,
+        formatted_labels: str,
+    ) -> None: ...
+
+    @abc.abstractmethod
+    def send_pull_request(
+        self,
+        pull_request: PullRequest,
+        formatted_body: str,
+        formatted_labels: str,
+    ) -> None: ...

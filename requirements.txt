@@ -2,3 +2,4 @@ sulguk==0.10.1
 requests==2.32.5
 beautifulsoup4==4.14.2
 lxml==6.0.2
+markdownify==0.12.1

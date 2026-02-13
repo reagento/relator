@@ -1,16 +1,22 @@
 name: "reagento/relator"
-description: "Send Telegram notifications for new GitHub issues or PRs"
+description: "Send Telegram and Discord notifications for new GitHub issues or PRs"
 author: "Sehat1137"
 
 inputs:
   tg-bot-token:
     description: "Telegram Bot Token"
-    required: true
+    required: false
   tg-chat-id:
     description: "Telegram Chat ID"
-    required: true
+    required: false
   tg-message-thread-id:
     description: "Telegram Message Thread ID"
+    required: false
+  discord-webhook-url:
+    description: "Discord Webhook URL"
+    required: false
+  discord-thread-id:
+    description: "Discord thread ID to post in (optional)"
     required: false
   github-token:
     description: "GitHub Token for API access"
@@ -51,18 +57,20 @@ runs:
       run: |
         pip install -r $GITHUB_ACTION_PATH/requirements.txt
 
-    - name: Send Telegram notification
+    - name: Send notifications
       shell: bash
       env:
         TELEGRAM_BOT_TOKEN: ${{ inputs.tg-bot-token }}
         TELEGRAM_CHAT_ID: ${{ inputs.tg-chat-id }}
+        TELEGRAM_MESSAGE_THREAD_ID: ${{ inputs.tg-message-thread-id }}
+        DISCORD_WEBHOOK_URL: ${{ inputs.discord-webhook-url }}
+        DISCORD_THREAD_ID: ${{ inputs.discord-thread-id }}
         GITHUB_TOKEN: ${{ inputs.github-token }}
         EVENT_URL: ${{ github.event.issue.url || github.event.pull_request.url }}
         BASE_URL: ${{ inputs.base-url }}
         ATTEMPT_COUNT: ${{ inputs.attempt-count }}
         HTML_TEMPLATE: ${{ inputs.html-template }}
         MD_TEMPLATE: ${{ inputs.md-template }}
-        TELEGRAM_MESSAGE_THREAD_ID: ${{ inputs.tg-message-thread-id }}
         JOIN_INPUT_WITH_LIST: ${{ inputs.join-input-with-list }}
         CUSTOM_LABELS: ${{ inputs.custom-labels }}
       run: |

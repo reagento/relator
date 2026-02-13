@@ -3,21 +3,23 @@
 ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-success?style=flat&logo=githubactions)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=flat&logo=python)
 ![Telegram](https://img.shields.io/badge/Telegram-Bot-blue?style=flat&logo=telegram)
+![Discord](https://img.shields.io/badge/Discord-Webhook-5865F2?style=flat&logo=discord)
 [![CodeQL](https://github.com/reagento/relator/actions/workflows/codeql.yml/badge.svg)](https://github.com/reagento/relator/actions/workflows/codeql.yml)
 
-**Relator** (Latin _referre_ - "to report") - delivers beautifully formatted GitHub notifications to Telegram. Get instant alerts for issues and PRs with smart labeling and clean formatting, keeping your team informed in real-time.
+**Relator** (Latin _referre_ - "to report") - delivers beautifully formatted GitHub notifications to Telegram and Discord. Get instant alerts for issues and PRs with smart labeling and clean formatting, keeping your team informed in real-time.
 
 ## ✨ Features
 
+- **Multi-Platform**: Send notifications to Telegram, Discord, or both simultaneously
 - **Instant Notifications**: Get real-time alerts for new events
-- **Rich Formatting**: Clean HTML and MD formatting
-- **Label Support**: Automatically converts GitHub labels to Telegram hashtags
+- **Rich Formatting**: HTML for Telegram, rich embeds for Discord
+- **Label Support**: Automatically converts GitHub labels to hashtags
 - **Customizable**: Multiple configuration options for different needs
-- **Reliable**: Built-in retry mechanism for Telegram API
+- **Reliable**: Built-in retry mechanism with exponential backoff
 
 ## 🚀 Quick Start
 
-### Basic Usage
+### Telegram Notifications
 
 ```yaml
 name: Event Notifier
@@ -43,6 +45,45 @@ jobs:
           tg-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           tg-chat-id: ${{ vars.TELEGRAM_CHAT_ID }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### Discord Notifications
+
+```yaml
+name: Event Notifier
+
+on:
+  issues:
+    types: [opened, reopened]
+  pull_request_target:
+    types: [opened, reopened]
+
+permissions:
+  issues: read
+  pull_request: read
+
+jobs:
+  notify:
+    name: "Discord notification"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord notification for new issue or pull request
+        uses: reagento/relator@v1.6.0
+        with:
+          discord-webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### Both Platforms Simultaneously
+
+```yaml
+- name: Send notification to Telegram and Discord
+  uses: reagento/relator@v1.6.0
+  with:
+    tg-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+    tg-chat-id: ${{ vars.TELEGRAM_CHAT_ID }}
+    discord-webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 > github-token it's not required for public projects and is unlikely to hit any [limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api?apiVersion=2022-11-28#primary-rate-limit-for-unauthenticated-users). However, github actions uses IP-based limits, and since github actions has a limited pool of addresses, these limits are considered public, and you'll hit them very quickly.
@@ -71,6 +112,8 @@ jobs:
 
 ## 🔧 Setup Instructions
 
+### Telegram Setup
+
 1. Create a Telegram Bot
 
 - Message `@BotFather` on [Telegram](https://t.me/botfather)
@@ -90,7 +133,25 @@ jobs:
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
 
+### Discord Setup
+
+1. Create a Discord Webhook
+
+- Go to your Discord server settings
+- Navigate to **Integrations** → **Webhooks**
+- Click **New Webhook**
+- Customize the webhook name and select the target channel
+- Copy the **Webhook URL**
+
+2. Configure GitHub Secrets
+   Add these secrets in your repository settings:
+
+- `DISCORD_WEBHOOK_URL`
+- `DISCORD_THREAD_ID` (optional)
+
 ## 📋 Example Output
+
+### Telegram
 
 Your Telegram notifications will look like this:
 
@@ -120,9 +181,22 @@ Pull requests:
 sent via relator
 ```
 
+### Discord
+
+Discord notifications appear as rich embeds with:
+
+- **Color-coded embeds**: Green for issues, purple for pull requests
+- **User avatars**: GitHub profile picture displayed
+- **Repository links**: Clickable links to repository and issue/PR
+- **Organized fields**: Repository, issue/PR number, changes (for PRs), branch info (for PRs)
+- **Markdown formatting**: Clean formatting with proper code blocks, bold, italic, and links
+- **Labels as hashtags**: Same label format as Telegram
+
 ## 🤝 Acknowledgments
 
-This action uses the excellent [sulguk](https://github.com/Tishka17/sulguk) library by `@Tishka17` for reliable Telegram message delivery
+This action uses:
+- [sulguk](https://github.com/Tishka17/sulguk) by `@Tishka17` for reliable Telegram message delivery
+- [markdownify](https://github.com/matthewwithanm/python-markdownify) for HTML to Markdown conversion for Discord
 
 ## 🌟 Support
 
