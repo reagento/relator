@@ -3,4 +3,4 @@ ruff>=0.14.0
 mypy>=1.18.2
 basedpyright >= 1.31.7
 types-requests >= 2.32.4.20250913
-zizmor >= 1.15.2, < 1.23
+zizmor >= 1.15.2, < 1.24
