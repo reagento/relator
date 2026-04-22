@@ -6,7 +6,6 @@ import traceback
 from notifier.application.interactors import SendIssue, SendPR
 from notifier.application.interfaces import Notifier
 from notifier.application.services import RenderService
-from notifier.infrastructure.discord_gateway import DiscordGateway
 from notifier.infrastructure.github_gateway import GithubGateway
 from notifier.infrastructure.telegram_gateway import TelegramGateway
 
@@ -58,18 +57,10 @@ if __name__ == "__main__":
         )
         notifiers.append(telegram_gateway)
 
-    discord_webhook_url = os.environ.get("DISCORD_WEBHOOK_URL")
-    if discord_webhook_url:
-        discord_gateway = DiscordGateway(
-            webhook_url=discord_webhook_url,
-            attempt_count=int(os.environ.get("ATTEMPT_COUNT", "2")),
-        )
-        notifiers.append(discord_gateway)
-
     if not notifiers:
         print(
             "Error: No notification platform configured. "
-            "Please provide either TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID or DISCORD_WEBHOOK_URL",
+            "Please provide TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID",
             file=sys.stderr,
         )
         sys.exit(1)
