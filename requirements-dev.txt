@@ -1,6 +1,6 @@
 -r requirements.txt
-ruff>=0.15.13
+ruff>=0.15.14
 mypy>=2.1.0
-basedpyright >= 1.39.4
-types-requests >= 2.33.0.20260513
-zizmor >= 1.25.0, < 1.26
+basedpyright >= 1.39.5
+types-requests >= 2.33.0.20260518
+zizmor >= 1.25.2, < 1.26
