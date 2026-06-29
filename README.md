@@ -32,7 +32,7 @@ on:
 
 permissions:
   issues: read
-  pull_request: read
+  pull-requests: read
 
 jobs:
   notify:
@@ -60,7 +60,7 @@ on:
 
 permissions:
   issues: read
-  pull_request: read
+  pull-requests: read
 
 jobs:
   notify:
