@@ -36,6 +36,9 @@ inputs:
   html-template:
     description: "HTML template for Telegram message"
     required: false
+  md-template:
+    description: "Markdown template for Telegram message"
+    required: false
   join-input-with-list:
     description: "Join input with bulleted list for rendering like github"
     required: true
