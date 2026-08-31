@@ -1,0 +1,68 @@
+name: Dependabot auto-merge
+
+on:
+  workflow_run:
+    workflows:
+      - CodeQL
+      - Linters
+    types:
+      - completed
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dependabot-automerge-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  merge:
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.pull_requests[0].number
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+      PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
+      REPOSITORY: ${{ github.repository }}
+    steps:
+      - name: Merge a green Dependabot pull request
+        shell: bash
+        run: |
+          pull_request="$(gh api "repos/${REPOSITORY}/pulls/${PR_NUMBER}")"
+
+          if [[ "$(jq -r '.user.login' <<<"${pull_request}")" != "dependabot[bot]" ]]; then
+            exit 0
+          fi
+
+          current_head="$(jq -r '.head.sha' <<<"${pull_request}")"
+          if [[ "${current_head}" != "${HEAD_SHA}" ]]; then
+            exit 0
+          fi
+
+          check_runs="$(gh api "repos/${REPOSITORY}/commits/${HEAD_SHA}/check-runs?per_page=100")"
+          for check_name in Analyze ruff mypy zizmor; do
+            conclusion="$(
+              jq -r --arg name "${check_name}" '
+                [.check_runs[] | select(.name == $name)] |
+                if length == 0 then "missing"
+                elif any(.status != "completed") then "pending"
+                elif any(.conclusion == "success") then "success"
+                else (map(.conclusion) | join(","))
+                end
+              ' <<<"${check_runs}"
+            )"
+
+            if [[ "${conclusion}" != "success" ]]; then
+              echo "${check_name}: ${conclusion}; waiting for a fully green CI run"
+              exit 0
+            fi
+          done
+
+          gh pr merge "${PR_NUMBER}" \
+            --repo "${REPOSITORY}" \
+            --squash \
+            --match-head-commit "${HEAD_SHA}"

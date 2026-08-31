@@ -1,4 +1,6 @@
 rules:
   dangerous-triggers:
     ignore:
+      # This workflow never checks out or executes pull-request code.
+      - dependabot-automerge.yml
       - new-event.yml
