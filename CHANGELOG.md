@@ -2,6 +2,74 @@
 
 <!-- version list -->
 
+## v1.7.1 (2026-08-31)
+
+### Bug Fixes
+
+- Align action configuration and linting
+  ([`6c90c66`](https://github.com/reagento/relator/commit/6c90c66212a462ccc9b4e2919ceb39cd286153c3))
+
+### Chores
+
+- Added dependabot config ([#25](https://github.com/reagento/relator/pull/25),
+  [`18db363`](https://github.com/reagento/relator/commit/18db3634bee4bc640edcc35c6c34fa3fe1a8124e))
+
+- **deps**: Bump github/codeql-action from 4.32.6 to 4.35.1 in the github-actions group
+  ([#32](https://github.com/reagento/relator/pull/32),
+  [`e35f290`](https://github.com/reagento/relator/commit/e35f290017ab904a0004bc01e5b71dec684fe3f2))
+
+- **deps**: Bump github/codeql-action from 4.35.1 to 4.35.5 in the github-actions group
+  ([#38](https://github.com/reagento/relator/pull/38),
+  [`3cb871b`](https://github.com/reagento/relator/commit/3cb871bb32e48fbc2e19cff61805c7f862b68d0c))
+
+- **deps**: Bump lxml from 6.1.1 to 6.1.2 in the main group
+  ([#55](https://github.com/reagento/relator/pull/55),
+  [`f362124`](https://github.com/reagento/relator/commit/f362124f8cbe78dd52006985f8c917dbe09c47ba))
+
+- **deps**: Bump the github-actions group across 1 directory with 4 updates
+  ([#54](https://github.com/reagento/relator/pull/54),
+  [`a1d638e`](https://github.com/reagento/relator/commit/a1d638eb95e0c0df14376e5aa6051eef1a66c0b5))
+
+- **deps**: Bump the github-actions group across 1 directory with 4 updates
+  ([#47](https://github.com/reagento/relator/pull/47),
+  [`3f93b95`](https://github.com/reagento/relator/commit/3f93b95a5fdec8bd08774f1db5227742727ba896))
+
+- **deps**: Bump the github-actions group across 1 directory with 4 updates
+  ([#29](https://github.com/reagento/relator/pull/29),
+  [`f4f8a50`](https://github.com/reagento/relator/commit/f4f8a5020466845caa8e8510e816ef304b8d19b5))
+
+- **deps**: Bump the main group across 1 directory with 4 updates
+  ([#48](https://github.com/reagento/relator/pull/48),
+  [`f22184c`](https://github.com/reagento/relator/commit/f22184c3d9ca10843617d297ac854f04ecb2507e))
+
+- **deps**: Bump the main group across 1 directory with 5 updates
+  ([#33](https://github.com/reagento/relator/pull/33),
+  [`6716cf4`](https://github.com/reagento/relator/commit/6716cf405267d49de697744f8119b71698f5e7f2))
+
+- **deps**: Bump the main group with 2 updates ([#37](https://github.com/reagento/relator/pull/37),
+  [`725e109`](https://github.com/reagento/relator/commit/725e1097c7c0fc2fe2ee425956f6fe7e14cc5264))
+
+- **deps-dev**: Bump the dev group across 1 directory with 5 updates
+  ([#51](https://github.com/reagento/relator/pull/51),
+  [`5221f65`](https://github.com/reagento/relator/commit/5221f655d6b47fcf81d0ffa1bec3d39f6e3133a9))
+
+- **deps-dev**: Bump the dev group across 1 directory with 5 updates
+  ([#35](https://github.com/reagento/relator/pull/35),
+  [`4bd5721`](https://github.com/reagento/relator/commit/4bd5721b7ca525eb4de2a88977af5990b12bf266))
+
+- **deps-dev**: Bump the dev group with 4 updates
+  ([#39](https://github.com/reagento/relator/pull/39),
+  [`7902181`](https://github.com/reagento/relator/commit/79021813db31817a735ce44213f4618689a23400))
+
+- **deps-dev**: Bump the dev group with 5 updates
+  ([#36](https://github.com/reagento/relator/pull/36),
+  [`f6ef340`](https://github.com/reagento/relator/commit/f6ef3408aabaa1da33649fc4249c9767d180ebda))
+
+- **deps-dev**: Update zizmor requirement from <1.16,>=1.15.2 to >=1.15.2,<1.23 in the dev group
+  ([#26](https://github.com/reagento/relator/pull/26),
+  [`db0c9c8`](https://github.com/reagento/relator/commit/db0c9c8542e82442364990788bdf28ebc8cfd7e8))
+
+
 ## v1.7.0 (2026-02-13)
 
 ### Chores
