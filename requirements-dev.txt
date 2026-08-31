@@ -1,7 +1,7 @@
 -r requirements.txt
-ruff>=0.15.22
-mypy>=2.3.0
+ruff>=0.16.4
+mypy>=2.3.1
 ty>=0.0.75
 pyrefly>=1.2.0
 types-requests >= 2.33.0.20260712
-zizmor >= 1.26.1, < 1.27
+zizmor >= 1.29.0, < 1.30
