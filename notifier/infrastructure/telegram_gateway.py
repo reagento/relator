@@ -9,7 +9,8 @@ from notifier.infrastructure.send_weebhook import send_webhook
 TG_MESSAGE_LIMIT: typing.Final = 4096
 
 ISSUE_TEMPLATE: typing.Final = (
-    "🚀 <b>New issue to <a href=/{repository}>{repository}</a> by <a href=/{user}>@{user}</a> </b><br/>"
+    "🚀 <b>New issue to <a href=/{repository}>{repository}</a> by "
+    "<a href=/{user}>@{user}</a> </b><br/>"
     "📝 <b>{title}</b> (<a href='{url}'>#{id}</a>)<br/><br/>"
     "{body}<br/>"
     "{labels}"
@@ -17,7 +18,8 @@ ISSUE_TEMPLATE: typing.Final = (
 )
 
 PR_TEMPLATE: typing.Final = (
-    "🎉 <b>New Pull Request to <a href=/{repository}>{repository}</a> by <a href=/{user}>@{user}</a></b><br/>"
+    "🎉 <b>New Pull Request to <a href=/{repository}>{repository}</a> by "
+    "<a href=/{user}>@{user}</a></b><br/>"
     "✨ <b>{title}</b> (<a href='{url}'>#{id}</a>)<br/>"
     "📊 +{additions}/-{deletions}<br/>"
     "🌿 {head_ref} → {base_ref}<br/><br/>"
@@ -48,13 +50,21 @@ class TelegramGateway(interfaces.Notifier):
         formatted_body: str,
         formatted_labels: str,
     ) -> None:
-        message = self._create_issue_message(issue, formatted_body, formatted_labels)
+        message = self._create_issue_message(
+            issue,
+            formatted_body,
+            formatted_labels,
+        )
         render_result = sulguk.transform_html(message, base_url="https://github.com")
 
         if len(render_result.text) > TG_MESSAGE_LIMIT:
-            message = self._create_issue_message(issue, "<p></p>", formatted_labels)
+            message = self._create_issue_message(
+                issue,
+                "<p></p>",
+                formatted_labels,
+            )
             render_result = sulguk.transform_html(
-                message, base_url="https://github.com"
+                message, base_url="https://github.com",
             )
         send_webhook(
             payload=self._create_payload(render_result),
@@ -69,14 +79,18 @@ class TelegramGateway(interfaces.Notifier):
         formatted_labels: str,
     ) -> None:
         message = self._create_pr_message(
-            pull_request, formatted_body, formatted_labels
+            pull_request, formatted_body, formatted_labels,
         )
         render_result = sulguk.transform_html(message, base_url="https://github.com")
 
         if len(render_result.text) > TG_MESSAGE_LIMIT:
-            message = self._create_pr_message(pull_request, "<p></p>", formatted_labels)
+            message = self._create_pr_message(
+                pull_request,
+                "<p></p>",
+                formatted_labels,
+            )
             render_result = sulguk.transform_html(
-                message, base_url="https://github.com"
+                message, base_url="https://github.com",
             )
 
         send_webhook(
@@ -85,11 +99,14 @@ class TelegramGateway(interfaces.Notifier):
             attempts=self._attempt_count,
         )
 
-    def _create_payload(self, render_result: sulguk.RenderResult) -> dict:
+    def _create_payload(
+        self,
+        render_result: sulguk.RenderResult,
+    ) -> dict[str, typing.Any]:
         for e in render_result.entities:
             e.pop("language", None)
 
-        payload = {
+        payload: dict[str, typing.Any] = {
             "text": render_result.text,
             "entities": render_result.entities,
             "disable_web_page_preview": True,
@@ -101,7 +118,12 @@ class TelegramGateway(interfaces.Notifier):
 
         return payload
 
-    def _create_issue_message(self, issue: Issue, body: str, labels: str) -> str:
+    def _create_issue_message(
+        self,
+        issue: Issue,
+        body: str,
+        labels: str,
+    ) -> str:
         template = self._custom_template or ISSUE_TEMPLATE
         return template.format(
             id=issue.id,
@@ -114,7 +136,12 @@ class TelegramGateway(interfaces.Notifier):
             promo="<a href='/reagento/relator'>sent via relator</a>",
         )
 
-    def _create_pr_message(self, pr: PullRequest, body: str, labels: str) -> str:
+    def _create_pr_message(
+        self,
+        pr: PullRequest,
+        body: str,
+        labels: str,
+    ) -> str:
         """Create HTML message for pull request"""
         template = self._custom_template or PR_TEMPLATE
         return template.format(

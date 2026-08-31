@@ -19,6 +19,9 @@ lint.ignore = [
     "SIM103",
     "ISC003",
 
+    # The project does not require per-file copyright headers.
+    "CPY001",
+
     # identical by code != identical by meaning
     "SIM114",
 

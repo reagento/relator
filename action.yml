@@ -7,7 +7,7 @@ inputs:
     description: "Telegram Bot Token"
     required: false
   tg-chat-id:
-    description: "Telegram Chat ID"
+    description: "Telegram numeric chat ID or @chatname for a public chat"
     required: false
   tg-message-thread-id:
     description: "Telegram Message Thread ID"
@@ -70,7 +70,6 @@ runs:
         BASE_URL: ${{ inputs.base-url }}
         ATTEMPT_COUNT: ${{ inputs.attempt-count }}
         HTML_TEMPLATE: ${{ inputs.html-template }}
-        MD_TEMPLATE: ${{ inputs.md-template }}
         JOIN_INPUT_WITH_LIST: ${{ inputs.join-input-with-list }}
         CUSTOM_LABELS: ${{ inputs.custom-labels }}
       run: |

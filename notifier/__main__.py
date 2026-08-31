@@ -23,7 +23,7 @@ def get_interactor(url: str) -> type[SendIssue] | type[SendPR]:
     elif re.match(pr_pattern, url):
         return SendPR
     else:
-        raise ValueError(f"Unknown event type for URL: {url}")
+        raise ValueError(f"Unknown event type for URL: {url}")  # noqa: TRY003
 
 
 if __name__ == "__main__":
@@ -67,9 +67,10 @@ if __name__ == "__main__":
         notifiers.append(discord_gateway)
 
     if not notifiers:
-        print(
+        print(  # noqa: T201
             "Error: No notification platform configured. "
-            "Please provide either TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID or DISCORD_WEBHOOK_URL",
+            "Please provide either TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID "
+            "or DISCORD_WEBHOOK_URL",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -82,7 +83,7 @@ if __name__ == "__main__":
 
     try:
         interactor.handler()
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         traceback.print_exc(file=sys.stderr)
-        print(f"Error processing event: {e}", file=sys.stderr)
+        print(f"Error processing event: {e}", file=sys.stderr)  # noqa: T201
         sys.exit(1)

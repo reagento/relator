@@ -22,7 +22,8 @@ updates:
         patterns:
           - "ruff*"
           - "mypy*"
-          - "basedpyright*"
+          - "ty*"
+          - "pyrefly*"
           - "types-requests*"
           - "zizmor*"
       main:

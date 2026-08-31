@@ -11,6 +11,7 @@ from notifier.infrastructure.send_weebhook import send_webhook
 DISCORD_EMBED_DESC_LIMIT: typing.Final = 2000
 DISCORD_COLOR_ISSUE: typing.Final = 0x28A745  # green
 DISCORD_COLOR_PR: typing.Final = 0x6F42C1  # purple
+MAX_CONSECUTIVE_EMPTY_LINES: typing.Final = 2
 
 
 class DiscordGateway(interfaces.Notifier):
@@ -42,7 +43,7 @@ class DiscordGateway(interfaces.Notifier):
         formatted_labels: str,
     ) -> None:
         embed = self._format_pull_request(
-            pull_request, formatted_body, formatted_labels
+            pull_request, formatted_body, formatted_labels,
         )
         send_webhook(
             url=self._webhook_url,
@@ -51,13 +52,16 @@ class DiscordGateway(interfaces.Notifier):
         )
 
     def _format_issue(
-        self, issue: Issue, body: str, labels: str
+        self, issue: Issue, body: str, labels: str,
     ) -> dict[str, typing.Any]:
         markdown_body = self._html_to_markdown(body)
         description = self._create_description(markdown_body, labels)
 
-        embed = {
-            "title": f"🚀 New Issue #{issue.id}: {self._truncate_title(issue.title)}",
+        return {
+            "title": (
+                f"🚀 New Issue #{issue.id}: "
+                f"{self._truncate_title(issue.title)}"
+            ),
             "description": description,
             "url": issue.url,
             "color": DISCORD_COLOR_ISSUE,
@@ -84,16 +88,14 @@ class DiscordGateway(interfaces.Notifier):
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
-        return embed
-
     def _format_pull_request(
-        self, pr: PullRequest, body: str, labels: str
+        self, pr: PullRequest, body: str, labels: str,
     ) -> dict[str, typing.Any]:
         labels = labels.rstrip("<br/>")
         markdown_body = self._html_to_markdown(body)
         description = self._create_description(markdown_body, labels)
 
-        embed = {
+        return {
             "title": f"🎉 New PR #{pr.id}: {self._truncate_title(pr.title)}",
             "description": description,
             "url": pr.url,
@@ -131,14 +133,12 @@ class DiscordGateway(interfaces.Notifier):
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
-        return embed
-
     def _html_to_markdown(self, html: str) -> str:
         if not html or html == "<p></p>":
             return ""
 
         html = html.replace("<br/>", "\n")
-        print(f"After trim {html=}")
+        print(f"After trim {html=}")  # noqa: T201
         try:
             markdown = markdownify(
                 html,
@@ -148,7 +148,7 @@ class DiscordGateway(interfaces.Notifier):
             )
             markdown = self._clean_markdown(markdown)
             return markdown.strip()
-        except Exception:
+        except Exception:  # noqa: BLE001
             soup = bs4.BeautifulSoup(html, "lxml")
             return soup.get_text().strip()
 
@@ -160,7 +160,7 @@ class DiscordGateway(interfaces.Notifier):
         for line in lines:
             if line.strip() == "":
                 empty_count += 1
-                if empty_count <= 2:
+                if empty_count <= MAX_CONSECUTIVE_EMPTY_LINES:
                     cleaned_lines.append(line)
             else:
                 empty_count = 0

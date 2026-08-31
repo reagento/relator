@@ -31,10 +31,11 @@ class RenderService:
 
         try:
             sulguk.transform_html(result, base_url="https://github.com")
-            return result
-        except Exception as e:
-            print(f"Error transforming HTML: {e}", file=sys.stderr)
+        except Exception as e:  # noqa: BLE001
+            print(f"Error transforming HTML: {e}", file=sys.stderr)  # noqa: T201
             return "<p></p>"
+        else:
+            return result
 
     def format_labels(self, labels: list[str]):
         return (

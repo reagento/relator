@@ -12,11 +12,11 @@ def send_webhook(*, payload: dict[str, Any], url: str, attempts: int) -> None:
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError:
-            print(response.content, file=sys.stderr)
+            print(response.content, file=sys.stderr)  # noqa: T201
             count += 1
             time.sleep(count * 2)
         else:
-            print(
+            print(  # noqa: T201
                 f"Response: {response.status_code=} {response.text=}",
                 file=sys.stdout,
             )

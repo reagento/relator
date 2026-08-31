@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Telegram notification for new issue or pull request
-        uses: reagento/relator@v1.6.0
+        uses: reagento/relator@v1.7.1
         with:
           tg-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           tg-chat-id: ${{ vars.TELEGRAM_CHAT_ID }}
@@ -68,9 +68,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send Discord notification for new issue or pull request
-        uses: reagento/relator@v1.6.0
+        uses: reagento/relator@v1.7.1
         with:
           discord-webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          discord-thread-id: ${{ vars.DISCORD_THREAD_ID }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
@@ -78,7 +79,7 @@ jobs:
 
 ```yaml
 - name: Send notification to Telegram and Discord
-  uses: reagento/relator@v1.6.0
+  uses: reagento/relator@v1.7.1
   with:
     tg-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
     tg-chat-id: ${{ vars.TELEGRAM_CHAT_ID }}
@@ -92,7 +93,7 @@ jobs:
 
 ```yaml
 - name: Send Telegram notification for new issue
-  uses: reagento/relator@v1.6.0
+  uses: reagento/relator@v1.7.1
   with:
     tg-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
     tg-chat-id: ${{ vars.TELEGRAM_CHAT_ID }}
@@ -103,12 +104,29 @@ jobs:
     # if you want to join the input with a list of labels
     join-input-with-list: "1"
     # if you have topics
-    telegram-message-thread-id: 2
+    tg-message-thread-id: 2
     # by default templates exist, these parameters override them
     html-template: "<b>New issue by <a href=/{user}>@{user}</a> </b><br/><b>{title}</b> (<a href='{url}'>#{id}</a>)<br/>{body}{labels}<br/>{promo}"
     # Custom tags to add to every notification (comma-separated)
     custom-labels: "my_project,custom,etc"
 ```
+
+Available inputs:
+
+| Input | Required | Default | Description |
+| --- | --- | --- | --- |
+| `tg-bot-token` | No | — | Telegram bot token |
+| `tg-chat-id` | No | — | Telegram numeric chat ID, or `"@chatname"` for a public chat |
+| `tg-message-thread-id` | No | — | Telegram topic/thread ID |
+| `discord-webhook-url` | No | — | Discord webhook URL |
+| `discord-thread-id` | No | — | Discord thread ID to post in |
+| `github-token` | No | — | GitHub token for API access |
+| `base-url` | No | `https://github.com` | Base URL used when rendering links |
+| `python-version` | No | `3.10` | Python version used by the action |
+| `attempt-count` | No | `2` | Number of Telegram API attempts |
+| `html-template` | No | — | Custom HTML template for Telegram messages |
+| `join-input-with-list` | Yes | `0` | Render GitHub task-list inputs as a list |
+| `custom-labels` | No | — | Comma-separated labels added to each notification |
 
 ## 🔧 Setup Instructions
 
@@ -122,10 +140,10 @@ jobs:
 
 2. Get Chat ID
 
-- Add your bot to the desired chat
-- Send a message in the chat
+- For a public chat, use its username directly: `tg-chat-id: "@chatname"`
+- For a private chat, add your bot to the chat and send a message
 - Visit `https://api.telegram.org/bot<YOUR_BOT_TOKEN>/getUpdates`
-- Find the chat.id in the response
+- Find the private chat's `chat.id` in the response
 
 3. Configure GitHub Secrets
    Add these secrets in your repository settings:
