@@ -1,10 +1,10 @@
 # Relator <a href="https://github.com/marketplace/actions/reagento-relator">🔔</a>
 
-![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-success?style=flat&logo=githubactions)
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue?style=flat&logo=python)
-![Telegram](https://img.shields.io/badge/Telegram-Bot-blue?style=flat&logo=telegram)
-![Discord](https://img.shields.io/badge/Discord-Webhook-5865F2?style=flat&logo=discord)
-[![CodeQL](https://github.com/reagento/relator/actions/workflows/codeql.yml/badge.svg)](https://github.com/reagento/relator/actions/workflows/codeql.yml)
+![GitHub Actions](https://shieldcn.dev/badge/GitHub%20Actions-077124.svg?size=xs&font=geist&logo=githubactions)
+![Requires Python](https://shieldcn.dev/badge/requires%20python-3.10+-3775A9.svg?size=xs&mode=light&logo=python&logoColor=ffffff)
+![Telegram Bot](https://shieldcn.dev/badge/Telegram-Bot-abcde3.svg?font=geist&size=xs&logo=ri%3AFaTelegramPlane&color=26a4e2&valueColor=ffffff)
+![Discord](https://shieldcn.dev/badge/Discord-Webhook-5865F2.svg?logo=discord&size=xs)
+<a href="https://github.com/reagento/relator/actions/workflows/codeql.yml"><picture><source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/github/ci/reagento/relator.svg?workflow=codeql.yml&amp;variant=ghost&amp;size=xs&amp;theme=zinc&amp;logo=ri%3AFiGithub&amp;label=CodeQL&amp;mode=dark"><img alt="badge" src="https://shieldcn.dev/github/ci/reagento/relator.svg?workflow=codeql.yml&amp;variant=ghost&amp;size=xs&amp;theme=zinc&amp;logo=ri%3AFiGithub&amp;label=CodeQL&amp;mode=light"></picture></a>
 
 **Relator** (Latin _referre_ - "to report") - delivers beautifully formatted GitHub notifications to Telegram and Discord. Get instant alerts for issues and PRs with smart labeling and clean formatting, keeping your team informed in real-time.
 
