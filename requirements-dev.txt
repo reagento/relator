@@ -1,5 +1,5 @@
 -r requirements.txt
-ruff>=0.16.4
+ruff>=0.16.5
 mypy>=2.3.1
 ty>=0.0.75
 pyrefly>=1.2.0
